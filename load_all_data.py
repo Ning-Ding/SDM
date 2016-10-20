@@ -6,6 +6,8 @@ Created on Wed Oct 19 19:23:58 2016
 import os
 import numpy as np
 from scipy import io
+from PIL import Image,ImageDraw
+from matplotlib import pyplot
 
 #loading ground_truth mat file
 def load_ground_truth_data():
@@ -42,3 +44,17 @@ def get_data_path_list(data='train'):
     assert os.path.isdir(folder_path)
     return os.listdir(folder_path)
     
+    
+def crop_image(image_name,bbox,data_type = 'train'):
+    '''
+    input: image_name ex:'image_0122'
+           bbox like this: [x1,y1,x2,y2] or [(x1,y1),(x2,y2)]
+           data_type maybe 'train' or 'test' by default is 'train'
+    output: a cropped image numpy array
+    '''
+    image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
+    assert os.path.exists(image_path)
+    im = Image.open(image_path)
+    draw = ImageDraw.Draw(im)
+    draw.rectangle(bbox)
+    im.show()
