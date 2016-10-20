@@ -37,7 +37,7 @@ def get_data_path_list(data='train'):
     input: 'train' or 'test'  by default is 'train'
     putput: get a list containing all the training images' paths
     '''
-    folder_path = 'data/' + data + 'set/png
+    folder_path = 'data/' + data + 'set/png'
     assert os.path.exists(folder_path)
     assert os.path.isdir(folder_path)
     return os.listdir(folder_path)
