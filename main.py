@@ -157,7 +157,7 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     landmarks -= bbox[:2]
     landmarks = landmarks * im_resize.size / im_crop.size    
     
-    return np.arrya(grey),landmarks.astype(int)
+    return np.array(grey),landmarks.astype(int)
 
 
 
