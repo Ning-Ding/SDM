@@ -30,6 +30,7 @@ def load_boxes(data_type = 'train'):
     assert os.path.exists(file_path)
     x = io.loadmat(file_path)['bounding_boxes'][0]
     x = [x[0][0] for x in x]
+    print 'loading ground truth bboxes…………………………'
     return {x[i][0][0]:x[i][1][0] for i in range(len(x))}
     
     
@@ -160,8 +161,6 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     return np.array(grey),landmarks.astype(int)
 
 
-
-
 def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_per_block=1):
     '''
     Given a grey image in numpy array and a vector of sequence of coordinates,
@@ -279,21 +278,3 @@ def train(data, initial_x, N = 5, alpha = 0.1):
         x = x + reg.coef_ * H + reg.intercept_
         
     return regressors
-
-
-
-
-
-
-'''
-if __name__=='__main__':
-
-    
-    by run this python file, we could get a list named Data
-    Data containing 811 tuples and each tuple holds two numpy array containing images and marks
-    
-    bbox = load_ground_truth_data()
-    image_list = get_data_path_list()
-    Data = []
-    for path in image_list:Data.append(crop_image(path[:10], list(bbox[path])))    
-'''
