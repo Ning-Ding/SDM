@@ -4,7 +4,7 @@ Created on Fri Oct 21 19:02:31 2016
 
 @author: dingning
 """
-
+from __future__ import division
 import os
 from PIL import Image
 import numpy as np
@@ -69,6 +69,18 @@ def get_image_path_list(data_type='train'):
 
 
 def compute_new_bbox(image_size,bbox,expand_rate = 0.1):
+    '''
+    compute the expanded bbox
+    a robust function to expand the crop image bbox even the original bbox is
+    around the border of the image
+    ---------------------------------------------------------------------------
+    INPUT:
+        image_size: a tuple   ex: (height,width)
+        bbox: the ground_truth bounding boxes  ex:[x0,y0,x1,y1]
+        expand_rate: the rate to expand the bbox  by default is 0.1
+    OUTPUT:
+        new bbox: ex:[x0,y0,x1,y1]
+    '''
     x_size,y_size = image_size
     bx0,by0,bx1,by1 = bbox
     bw = by1 - by0
@@ -116,32 +128,38 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.1):
     return nbx0,nby0,nbx1,nby1
     
 def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'):
+    '''
+    crop and resize the image given the ground truth bounding boxes
+    also, compute the new coordinates according to transformation
+    ---------------------------------------------------------------------------
+    INPUT:
+        image_name: a string without extension  ex: 'image_0007'
+        bbox: the ground_truth bounding boxes  ex:[x0,y0,x1,y1]
+        new_size: the size used by the resize function
+        data_type: 'train' or 'test'
+    OUTPUT:
+        grey: a numpy array of grey image after crop and resize
+        landmarks: new landmarks accordance with new image
+    ---------------------------------------------------------------------------
+    '''
     image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
+    
+    #compute the new bbox and the crop and resize the image
     bbox = compute_new_bbox(im.size,bbox)
     im_crop = im.crop(bbox)
     im_resize = im_crop.resize(new_size)
     grey = im_resize.convert('L')
-    return grey
-
-def crop_image(image_name,bbox,data_type = 'train'):
-    '''
-    input: image_name ex:'image_0122'
-           bbox like this: [x1,y1,x2,y2] or [(x1,y1),(x2,y2)]
-           data_type maybe 'train' or 'test' by default is 'train'
-    output: a tuple containing a cropped image numpy array and it's landmarks
-    '''
-    image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
-    assert os.path.exists(image_path)
-    im = Image.open(image_path)
-    bbox = map(lambda x: int(round(x)),bbox)
-    im_crop = im.crop(bbox)
-    marks = load_landmarks(image_name)
-    marks -= bbox[:2]
-    im_array = array(im_crop)
-    return im_array,marks
     
+    #compute the new landmarks according to transformation procedure
+    landmarks = load_landmarks(image_name)
+    landmarks -= bbox[:2]
+    landmarks = landmarks * im_resize.size / im_crop.size    
+    
+    return np.arrya(grey),landmarks.astype(int)
+
+
 
 
 def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_per_block=1):
