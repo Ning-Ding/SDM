@@ -11,6 +11,7 @@ import numpy as np
 from scipy import sqrt, pi, arctan2, io
 from scipy.ndimage import uniform_filter
 from sklearn.linear_model import Lasso
+from math import floor
 
 
 def load_boxes(data_type = 'train'):
@@ -67,6 +68,62 @@ def get_image_path_list(data_type='train'):
     return os.listdir(folder_path)
 
 
+def compute_new_bbox(image_size,bbox,expand_rate = 0.1):
+    x_size,y_size = image_size
+    bx0,by0,bx1,by1 = bbox
+    bw = by1 - by0
+    bh = bx1 - bx0
+    if bw > bh:
+        delta = expand_rate * bw
+        if by1 + delta > y_size:
+            nby1 = y_size
+        else:
+            nby1 = int(floor(by1 + delta))
+        if by0 - delta < 0:
+            nby0 = 0
+        else:
+            nby0 = int(floor(by0 - delta))
+        new_w = nby1 - nby0
+        delta_h = (new_w - bh) / 2
+        if bx0 - delta_h < 0:
+            nbx0 = 0
+        else:
+            nbx0 = int(floor(bx0 - delta_h))
+        if bx1 + delta_h > x_size:
+            nbx1 = x_size
+        else:
+            nbx1 = int(floor(bx1 + delta_h))
+    else:
+        delta = expand_rate * bh
+        if bx1 + delta > x_size:
+            nbx1 = x_size
+        else:
+            nbx1 = int(floor(bx1 + delta))
+        if bx0 - delta < 0:
+            nbx0 = 0
+        else:
+            nbx0 = int(floor(bx0 - delta))
+        new_h = nbx1 - nbx0
+        delta_w = (new_h - bw) / 2
+        if by0 - delta_w < 0:
+            nby0 = 0
+        else:
+            nby0 = int(floor(by0 - delta_w))
+        if by1 + delta_w > y_size:
+            nby1 = y_size
+        else:
+            nby1 = int(floor(by1 + delta_w))
+    return nbx0,nby0,nbx1,nby1
+    
+def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'):
+    image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
+    assert os.path.exists(image_path)
+    im = Image.open(image_path)
+    bbox = compute_new_bbox(im.size,bbox)
+    im_crop = im.crop(bbox)
+    im_resize = im_crop.resize(new_size)
+    grey = im_resize.convert('L')
+    return grey
 
 def crop_image(image_name,bbox,data_type = 'train'):
     '''
@@ -210,13 +267,15 @@ def train(data, initial_x, N = 5, alpha = 0.1):
 
 
 
-
+'''
 if __name__=='__main__':
-    '''
+
+    
     by run this python file, we could get a list named Data
     Data containing 811 tuples and each tuple holds two numpy array containing images and marks
-    '''
+    
     bbox = load_ground_truth_data()
     image_list = get_data_path_list()
     Data = []
     for path in image_list:Data.append(crop_image(path[:10], list(bbox[path])))    
+'''
