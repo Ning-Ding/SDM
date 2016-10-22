@@ -175,7 +175,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
             nby1 = int(floor(by1 + delta_w))
     return nbx0,nby0,nbx1,nby1
     
-def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'):
+def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'.expand = 100):
     '''
     crop and resize the image given the ground truth bounding boxes
     also, compute the new coordinates according to transformation
@@ -193,7 +193,8 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
-    im = ImageOps.expand(im,(50,50,50,50),fill = 'black')
+    im = ImageOps.expand(im,(expand,expand,expand,expand),fill = 'black')
+    bbox += expand
     
     #compute the new bbox and the crop and resize the image
     bbox = compute_new_bbox(im.size,bbox)
@@ -202,10 +203,9 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     grey = im_resize.convert('L')
     
     #compute the new landmarks according to transformation procedure
-    landmarks = load_landmarks(image_name)
-    landmarks = landmarks - (bbox[:2]) - 50
+    landmarks = load_landmarks(image_name) + expand
+    landmarks = landmarks - (bbox[:2])
     landmarks = landmarks * im_resize.size / im_crop.size
-    landmarks = np.where(landmarks > 0, landmarks, 0)    
     
     return np.array(grey),landmarks.astype(int)
 
