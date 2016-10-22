@@ -116,7 +116,7 @@ def get_image_path_list(data_type='train'):
     return os.listdir(folder_path)
 
 
-def compute_new_bbox(image_size,bbox,expand_rate = 0.1):
+def compute_new_bbox(image_size,bbox,expand_rate = 0.5):
     '''
     compute the expanded bbox
     a robust function to expand the crop image bbox even the original bbox is
