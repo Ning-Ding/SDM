@@ -193,19 +193,16 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
-    im = ImageOps.expand(im,(expand,expand,expand,expand),fill = 'black')
-    bbox += expand
-    
-    #compute the new bbox and the crop and resize the image
     bbox = compute_new_bbox(im.size,bbox)
     im_crop = im.crop(bbox)
-    im_resize = im_crop.resize(new_size)
+    im_expand = ImageOps.expand(im_crop,(expand,expand,expand,expand),fill = 'black')
+    im_resize = im_expand.resize(new_size)
     grey = im_resize.convert('L')
     
     #compute the new landmarks according to transformation procedure
-    landmarks = load_landmarks(image_name) + expand
-    landmarks = landmarks - (bbox[:2])
-    landmarks = landmarks * im_resize.size / im_crop.size
+    landmarks = load_landmarks(image_name)
+    landmarks = landmarks - (bbox[:2]) + expand
+    landmarks = landmarks * im_resize.size / im_expand.size
     
     return np.array(grey),landmarks.astype(int)
 
