@@ -175,7 +175,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
             nby1 = int(floor(by1 + delta_w))
     return nbx0,nby0,nbx1,nby1
     
-def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'.expand = 100):
+def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train',expand = 100):
     '''
     crop and resize the image given the ground truth bounding boxes
     also, compute the new coordinates according to transformation
