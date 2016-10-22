@@ -203,7 +203,8 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     #compute the new landmarks according to transformation procedure
     landmarks = load_landmarks(image_name)
     landmarks -= bbox[:2]
-    landmarks = landmarks * im_resize.size / im_crop.size    
+    landmarks = landmarks * im_resize.size / im_crop.size
+    landmarks = np.where(landmarks > 0, landmarks, 0)    
     
     return np.array(grey),landmarks.astype(int)
 
