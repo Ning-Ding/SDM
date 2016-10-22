@@ -48,7 +48,7 @@ def train(N = 5, alpha = 0.1):
         MARK_delta = MARK_TRUE - MARK_x
         HOG_x = np.zeros_like(HOG_TRUE)
         for j in range(len(image_path_list)):
-            if j % 100 == 0: print 'already computed',j+1,'features'
+            if j+1 % 100 == 0: print 'already computed',j+1,'features'
             HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2))
         
         reg = Lasso(alpha=alpha)
