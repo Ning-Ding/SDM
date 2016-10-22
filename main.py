@@ -13,6 +13,49 @@ from scipy.ndimage import uniform_filter
 from sklearn.linear_model import Lasso
 from math import floor
 
+def train(N = 5, alpha = 0.1):
+    '''
+    the standard SDM training function
+    ---------------------------------------------------------------------------
+    INPUT:
+        N: number of train iteration
+        alpha: the coefficient of L1 regularization of Lasso Linear Regression
+    OUTPUT:
+        regressors: a list containing a sequence of (R,b)
+    ---------------------------------------------------------------------------
+    '''
+    image_path_list = get_image_path_list()
+    bbox_dict = load_boxes()
+    mark_list = []
+    hog_list = []
+    grey_list = []
+    for path in image_path_list:
+        grey,mark = crop_and_resize_image(path[:10],bbox_dict[path])
+        hog_list.append(hog(grey,mark))
+        grey_list.append(grey)
+        mark_list.append(mark.ravel())
+        
+    HOG_TRUE = np.array(hog_list)
+    MARK_TRUE = np.array(mark_list)
+    MARK_x = np.array([np.mean(MARK_TRUE,axis = 0).astype(int).tolist()] * len(image_path_list))
+    regressors = []
+    
+    for i in range(N):
+        
+        MARK_delta = MARK_TRUE - MARK_x
+        HOG_x = np.zeros_like(HOG_TRUE)
+        for j in range(len(image_path_list)):
+            HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2))
+        
+        reg = Lasso(alpha=alpha)
+        reg.fit(HOG_x,MARK_delta)  
+        regressors.append([reg.coef_,reg.intercept_])        
+                
+        MARK_x = MARK_x + np.matmul(HOG_x * reg.coef_) + reg.intercept_
+        
+    return regressors
+
+
 
 def load_boxes(data_type = 'train'):
     '''
@@ -66,6 +109,7 @@ def get_image_path_list(data_type='train'):
     folder_path = 'data/' + data_type + 'set/png'
     assert os.path.exists(folder_path)
     assert os.path.isdir(folder_path)
+    print 'already get all the image path.'
     return os.listdir(folder_path)
 
 
@@ -237,44 +281,3 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
 
 
 
-def train(data, initial_x, N = 5, alpha = 0.1):
-    '''
-    the standard SDM training function
-    ---------------------------------------------------------------------------
-    INPUT:
-        data: a list containing all the images and true shape coordinates
-        initial_x: a numpy array containing initial estimated shape coordinates
-        N: number of train iteration
-        alpha: the coefficient of L1 regularization of Lasso Linear Regression
-    OUTPUT:
-        regressors: a list containing a sequence of (R,b)
-    ---------------------------------------------------------------------------
-    '''
-    x = initial_x
-    true_x = data[:,1]
-    regressors = []
-    
-    for i in range(N):
-        
-        '''计算当前坐标与真实坐标之差 '''
-        delta_x = true_x - x
-        
-        
-        '''根据当前坐标计算特征矩阵'''
-        H = []
-        for j in range(len(data)):
-            H.append(hog(data[j][0],data[j][1]))
-        H = np.array(H)
-        
-        
-        '''
-        根据线性最小二乘或回归分析求解(R,b)
-        '''
-        reg = Lasso(alpha=alpha)
-        reg.fit(H,delta_x.ravel())  
-        regressors.append([reg.coef_,reg.intercept_])        
-                
-        '''计算更新之后的坐标x'''
-        x = x + reg.coef_ * H + reg.intercept_
-        
-    return regressors
