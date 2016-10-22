@@ -13,13 +13,28 @@ from scipy.ndimage import uniform_filter
 from sklearn.linear_model import Lasso
 from math import floor
 
-def train(N = 5, alpha = 0.1):
+def train(N = 5, 
+          alpha = 0.1, 
+          new_size = (100,100), 
+          expand=100, 
+          expand_rate = 0.2, 
+          orientations=9, 
+          pixels_per_cell=3,
+          cells_per_side=1, 
+          cells_per_block=1):
     '''
     the standard SDM training function
     ---------------------------------------------------------------------------
     INPUT:
         N: number of train iteration
         alpha: the coefficient of L1 regularization of Lasso Linear Regression
+        new_size: the final image size
+        expand: number of pixels to expand after crop
+        expand_rate: the rate of new bbox to original bbox
+        orientations: the number of classes of gradient angle histogram in hog
+        pixels_per_cell: a hog feature parameter
+        cells_per_side: a hog feature parameter
+        cells_per_block: a hog feature parameter
     OUTPUT:
         regressors: a list containing a sequence of (R,b)
     ---------------------------------------------------------------------------
@@ -29,10 +44,18 @@ def train(N = 5, alpha = 0.1):
     mark_list = []
     hog_list = []
     grey_list = []
+    print 'computing the hog features for ture landmarks...........'
     for path in image_path_list:
-        print 'computing the hog feature for the: ',path
-        grey,mark = crop_and_resize_image(path[:10],bbox_dict[path])
-        hog_list.append(hog(grey,mark))
+        grey,mark = crop_and_resize_image(path[:10],
+                                          bbox_dict[path],
+                                          new_size = new_size, 
+                                          expand=expand,
+                                          expand_rate=expand_rate)
+        hog_list.append(hog(grey,mark,
+                            orientations=orientations, 
+                            pixels_per_cell=pixels_per_cell,
+                            cells_per_side=cells_per_side, 
+                            cells_per_block=cells_per_block))
         grey_list.append(grey)
         mark_list.append(mark.ravel())
         
@@ -43,7 +66,7 @@ def train(N = 5, alpha = 0.1):
     
     for i in range(N):
         
-        print 'Iteration: ',i
+        print 'Iteration: ',i + 1
         
         MARK_delta = MARK_TRUE - MARK_x
         HOG_x = np.zeros_like(HOG_TRUE)
@@ -127,7 +150,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
     INPUT:
         image_size: a tuple   ex: (height,width)
         bbox: the ground_truth bounding boxes  ex:[x0,y0,x1,y1]
-        expand_rate: the rate to expand the bbox  by default is 0.1
+        expand_rate: the rate to expand the bbox  by default is 0.2
     OUTPUT:
         new bbox: ex:[x0,y0,x1,y1]
     '''
@@ -177,7 +200,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
             nby1 = int(floor(by1 + delta_w))
     return nbx0,nby0,nbx1,nby1
     
-def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train',expand = 100):
+def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train',expand = 100,expand_rate=0.2):
     '''
     crop and resize the image given the ground truth bounding boxes
     also, compute the new coordinates according to transformation
@@ -195,7 +218,7 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
-    bbox = compute_new_bbox(im.size,bbox)
+    bbox = compute_new_bbox(im.size,bbox,expand_rate)
     im_crop = im.crop(bbox)
     im_expand = ImageOps.expand(im_crop,(expand,expand,expand,expand),fill = 'black')
     im_resize = im_expand.resize(new_size)
