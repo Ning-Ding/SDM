@@ -6,7 +6,7 @@ Created on Fri Oct 21 19:02:31 2016
 """
 from __future__ import division
 import os
-from PIL import Image
+from PIL import Image,ImageOps
 import numpy as np
 from scipy import sqrt, pi, arctan2, io
 from scipy.ndimage import uniform_filter
@@ -116,7 +116,7 @@ def get_image_path_list(data_type='train'):
     return os.listdir(folder_path)
 
 
-def compute_new_bbox(image_size,bbox,expand_rate = 0.5):
+def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
     '''
     compute the expanded bbox
     a robust function to expand the crop image bbox even the original bbox is
@@ -193,6 +193,7 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
+    im = ImageOps.expand(im,(50,50,50,50),fill = 'black')
     
     #compute the new bbox and the crop and resize the image
     bbox = compute_new_bbox(im.size,bbox)
@@ -202,7 +203,7 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     
     #compute the new landmarks according to transformation procedure
     landmarks = load_landmarks(image_name)
-    landmarks -= bbox[:2]
+    landmarks -= (bbox[:2] + [50,50])
     landmarks = landmarks * im_resize.size / im_crop.size
     landmarks = np.where(landmarks > 0, landmarks, 0)    
     
