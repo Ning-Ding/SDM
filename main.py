@@ -30,6 +30,7 @@ def train(N = 5, alpha = 0.1):
     hog_list = []
     grey_list = []
     for path in image_path_list:
+        print 'computing the hog feature for the: ',path
         grey,mark = crop_and_resize_image(path[:10],bbox_dict[path])
         hog_list.append(hog(grey,mark))
         grey_list.append(grey)
@@ -41,6 +42,8 @@ def train(N = 5, alpha = 0.1):
     regressors = []
     
     for i in range(N):
+        
+        print 'Iteration: ',i
         
         MARK_delta = MARK_TRUE - MARK_x
         HOG_x = np.zeros_like(HOG_TRUE)
@@ -281,3 +284,7 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
 
 
 
+#just for the test purpose
+if __name__ == '__main__':
+    image_path_list = get_image_path_list()
+    bbox_dict = load_boxes()
