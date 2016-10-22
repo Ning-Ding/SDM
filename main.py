@@ -54,9 +54,9 @@ def train(N = 5, alpha = 0.1):
         reg = Lasso(alpha=alpha)
         print 'computing the lasso linear regression……'
         reg.fit(HOG_x,MARK_delta)  
-        regressors.append([reg.coef_,reg.intercept_])        
+        regressors.append([reg.coef_.T,reg.intercept_.T])        
                 
-        MARK_x = MARK_x + np.matmul(HOG_x, reg.coef_) + reg.intercept_
+        MARK_x = MARK_x + np.matmul(HOG_x, regressors[i][0]) + regressors[i][1]
         
     return regressors
 
