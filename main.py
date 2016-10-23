@@ -153,7 +153,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                     pixels_per_cell=pixels_per_cell,
                     cells_per_side=cells_per_side, 
                     cells_per_block=cells_per_block)
-        mark_x = mark_x + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)
+        mark_x = (mark_x.ravel() + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)).reshape(68,2)
         EMS.append(abs(mark_x.astype(int) - mark_true)**2 / len(mark_true))
         
     return mark_x.astype(int),mark_true,EMS
