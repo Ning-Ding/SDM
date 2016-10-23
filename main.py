@@ -154,7 +154,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                     cells_per_side=cells_per_side, 
                     cells_per_block=cells_per_block)
         mark_x = (mark_x.ravel() + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)).reshape(68,2)
-        MSE.append((abs(mark_x.astype(int) - mark_true)**2).sum / len(mark_true))
+        MSE.append((abs(mark_x.astype(int) - mark_true)**2).sum() / len(mark_true))
         
     return mark_x.astype(int),mark_true,MSE
 
