@@ -64,7 +64,9 @@ def train(N = 5,
     MARK_TRUE = np.array(mark_list)
     initials = np.mean(MARK_TRUE,axis = 0).astype(int)
     MARK_x = np.array([initials.tolist()] * len(image_path_list))
-    regressors = []
+    initials = initials.reshape(68,2)
+    coef = []
+    inte = []
     
     for i in range(N):
         
@@ -79,11 +81,12 @@ def train(N = 5,
         reg = Lasso(alpha=alpha)
         print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
-        regressors.append([reg.coef_.T,reg.intercept_.T])        
+        coef.append(reg.coef_.T)
+        inte.append(reg.intercept_.T)       
                 
-        MARK_x = MARK_x + np.matmul(HOG_x, regressors[i][0]) + regressors[i][1]
+        MARK_x = MARK_x + np.matmul(HOG_x, coef[i]) + inte[i]
         
-    return regressors,initials
+    return np.array(coef),np.array(inte),initials
     
     
 '''    
@@ -126,7 +129,7 @@ def test(regressors,
     
     
     
-def test_for_one_image(path,bbox,regressors,initials,
+def test_for_one_image(coef,inte,path,bbox,initials,
                        new_size = (100,100),
                        expand=100, 
                        expand_rate = 0.2, 
@@ -142,15 +145,18 @@ def test_for_one_image(path,bbox,regressors,initials,
                                       expand=expand,
                                       expand_rate=expand_rate)
     mark_x = initials
-    for regressor in regressors:
+    EMS = []
+    
+    for i in range(coef.shape[0]):
         hog_x = hog(grey,mark_x,
                     orientations=orientations, 
                     pixels_per_cell=pixels_per_cell,
                     cells_per_side=cells_per_side, 
                     cells_per_block=cells_per_block)
-        mark_x += np.matmul(hog_x,regressor[0]) + regressor[1]
+        mark_x += np.matmul(hog_x,coef[i]) + inte[i]
+        EMS.append(abs(mark_x - mark_true)**2 / len(mark_true))
         
-    return mark_x,mark_true,abs(mark_x - mark_true)**2 / len(mark_true)
+    return mark_x,mark_true,EMS
 
 
 
