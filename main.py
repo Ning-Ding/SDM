@@ -18,12 +18,12 @@ class model_parameters(object):
     def __init__(self,
                  N=5,
                  alpha=0.1,
-                 new_size=(400,400),
+                 new_size=(200,200),
                  expand=100,
                  expand_rate=0.2,
                  orientations=9,
                  pixels_per_cell=3,
-                 cells_per_block=3,
+                 cells_per_block=1,
                  cells_per_side=2,
                  train_or_test='train'):
         self.N = N
@@ -62,6 +62,8 @@ def train(parameters):
         initials: a numpy array containing a initial landmarks (without ravel)
     ---------------------------------------------------------------------------
     '''
+    parameters.train_or_test = 'train'
+    
     #show the parameters which will be used
     parameters.show_parameters()
     
@@ -155,7 +157,11 @@ def test_for_one_image(coef,inte,path,bbox,initials,parameters):
         
     im = Image.fromarray(grey)
     draw = ImageDraw.Draw(im)
-    draw.point(mark_x,fill = 'red')
+    width = 5
+    for i in range(mark_x):
+        circle = [mark_x[i,0]-width,mark_x[i,1]_width,mark_x[i,0]+width,mark_x[i,1]+width]
+        draw.ellipse(circle,fill = 'red')
+    
     im.show()
     
         
