@@ -281,7 +281,7 @@ def crop_and_resize_image(image_name,bbox,
         landmarks: new landmarks accordance with new image
     ---------------------------------------------------------------------------
     '''
-    image_path = 'data/' + data_type + 'set/png/' + image_name + '.png'
+    image_path = 'data/' + train_or_test + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
     bbox = compute_new_bbox(im.size,bbox,expand_rate)
