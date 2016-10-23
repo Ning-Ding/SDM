@@ -265,7 +265,7 @@ def crop_and_resize_image(image_name,bbox,
                             new_size=(100,100),
                             data_type = 'train',
                             expand = 100,
-                            expand_rate=0.2
+                            expand_rate=0.2,
                             train_or_test='train'):
     '''
     crop and resize the image given the ground truth bounding boxes
@@ -376,5 +376,5 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
 
 #just for the test purpose
 if __name__ == '__main__':
-    image_path_list = get_image_path_list()
-    bbox_dict = load_boxes()
+    image_path_list = get_image_path_list('test')
+    bbox_dict = load_boxes('test')
