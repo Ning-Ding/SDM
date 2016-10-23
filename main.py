@@ -112,7 +112,11 @@ def train(parameters):
         print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
         coef.append(reg.coef_.T)
-        inte.append(reg.intercept_.T)       
+        inte.append(reg.intercept_.T)
+        
+        #compute the sparse rate
+        sparse_rate = coef[-1][coef[-1]==0].size / coef[-1].size
+        print 'the sparse rate of',i+1,'th R is:',sparse_rate        
         
         #compute new landmarks        
         MARK_x = MARK_x + np.matmul(HOG_x, coef[i]) + inte[i]
