@@ -154,9 +154,9 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                     cells_per_side=cells_per_side, 
                     cells_per_block=cells_per_block)
         mark_x += np.matmul(hog_x,coef[i]) + inte[i]
-        EMS.append(abs(mark_x - mark_true)**2 / len(mark_true))
+        EMS.append(abs(mark_x.astype(int) - mark_true)**2 / len(mark_true))
         
-    return mark_x,mark_true,EMS
+    return mark_x.astype(int),mark_true,EMS
 
 
 
@@ -214,9 +214,6 @@ def load_landmarks(image_name):
     with open(file_path) as f: rows = [rows.strip() for rows in f]
     coords_set = [point.split() for point in rows[rows.index('{') + 1:rows.index('}')]]
     return np.array([list([float(point) for point in coords]) for coords in coords_set])
-    
-    
-    
     
 
 
