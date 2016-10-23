@@ -37,6 +37,7 @@ def train(N = 5,
         cells_per_block: a hog feature parameter
     OUTPUT:
         regressors: a list containing a sequence of (R,b)
+        initials: a numpy array containing a initial landmarks
     ---------------------------------------------------------------------------
     '''
     image_path_list = get_image_path_list()
@@ -61,7 +62,8 @@ def train(N = 5,
         
     HOG_TRUE = np.array(hog_list)
     MARK_TRUE = np.array(mark_list)
-    MARK_x = np.array([np.mean(MARK_TRUE,axis = 0).astype(int).tolist()] * len(image_path_list))
+    initials = np.mean(MARK_TRUE,axis = 0).astype(int)
+    MARK_x = np.array([initials.tolist()] * len(image_path_list))
     regressors = []
     
     for i in range(N):
@@ -75,13 +77,99 @@ def train(N = 5,
             HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2))
         
         reg = Lasso(alpha=alpha)
-        print 'computing the lasso linear regression……'
+        print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
         regressors.append([reg.coef_.T,reg.intercept_.T])        
                 
         MARK_x = MARK_x + np.matmul(HOG_x, regressors[i][0]) + regressors[i][1]
         
-    return regressors
+    return regressors,initials
+    
+    
+'''    
+def test(regressors,
+         initials,
+         new_size = (100,100),
+         expand=100, 
+         expand_rate = 0.2, 
+         orientations=9, 
+         pixels_per_cell=3,
+         cells_per_side=1, 
+         cells_per_block=1):
+    
+    image_path_list = get_image_path_list('test')
+    bbox_dict = load_boxes('test')
+    mark_list = []
+    hog_list = []
+    grey_list = []
+    print 'computing the hog features for ture landmarks...........'
+    for path in image_path_list:
+        grey,mark = crop_and_resize_image(path[:10],
+                                          bbox_dict[path],
+                                          new_size = new_size, 
+                                          expand=expand,
+                                          expand_rate=expand_rate)
+        hog_list.append(hog(grey,mark,
+                            orientations=orientations, 
+                            pixels_per_cell=pixels_per_cell,
+                            cells_per_side=cells_per_side, 
+                            cells_per_block=cells_per_block))
+        grey_list.append(grey)
+        mark_list.append(mark.ravel())
+        
+    HOG_TRUE = np.array(hog_list)
+    MARK_TRUE = np.array(mark_list)
+    MARK_x = np.array([np.mean(MARK_TRUE,axis = 0).astype(int).tolist()] * len(image_path_list))
+    regressors = []
+'''    
+    
+    
+    
+    
+def test_for_one_image(path,bbox,regressors,initials,
+                       new_size = (100,100),
+                       expand=100, 
+                       expand_rate = 0.2, 
+                       orientations=9, 
+                       pixels_per_cell=3,
+                       cells_per_side=1, 
+                       cells_per_block=1):
+                           
+                           
+    grey,mark_true = crop_and_resize_image(path[:10],
+                                      bbox,
+                                      new_size=new_size,
+                                      expand=expand,
+                                      expand_rate=expand_rate)
+    mark_x = initials
+    for regressor in regressors:
+        hog_x = hog(grey,mark_x,
+                    orientations=orientations, 
+                    pixels_per_cell=pixels_per_cell,
+                    cells_per_side=cells_per_side, 
+                    cells_per_block=cells_per_block)
+        mark_x += np.matmul(hog_x,regressor[0]) + regressor[1]
+        
+    return mark_x,mark_true,abs(mark_x - mark_true)**2 / len(mark_true)
+
+
+
+def get_image_path_list(data_type='train'):
+    '''
+    get a list containing all the paths of images in the trainset
+    ---------------------------------------------------------------------------
+    INPUT:
+        data_type: 'train' or 'test'  by default is 'train'
+    OUTPUT:
+        a list with all the images' paths
+    ---------------------------------------------------------------------------
+    '''
+    folder_path = 'data/' + data_type + 'set/png'
+    assert os.path.exists(folder_path)
+    assert os.path.isdir(folder_path)
+    print 'already get all the image path.'
+    return os.listdir(folder_path)
+
 
 
 
@@ -101,7 +189,7 @@ def load_boxes(data_type = 'train'):
     assert os.path.exists(file_path)
     x = io.loadmat(file_path)['bounding_boxes'][0]
     x = [x[0][0] for x in x]
-    print 'loading ground truth bboxes…………………………'
+    print 'loading ground truth bboxes....................'
     return {x[i][0][0]:x[i][1][0] for i in range(len(x))}
     
     
@@ -124,21 +212,7 @@ def load_landmarks(image_name):
     
     
     
-def get_image_path_list(data_type='train'):
-    '''
-    get a list containing all the paths of images in the trainset
-    ---------------------------------------------------------------------------
-    INPUT:
-        data_type: 'train' or 'test'  by default is 'train'
-    OUTPUT:
-        a list with all the images' paths
-    ---------------------------------------------------------------------------
-    '''
-    folder_path = 'data/' + data_type + 'set/png'
-    assert os.path.exists(folder_path)
-    assert os.path.isdir(folder_path)
-    print 'already get all the image path.'
-    return os.listdir(folder_path)
+
 
 
 def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
