@@ -14,6 +14,7 @@ from sklearn.linear_model import Lasso
 from math import floor
 
 class model_parameters(object):
+    
     def __init__(self,
                  N=5,
                  alpha=0.1,
@@ -37,7 +38,16 @@ class model_parameters(object):
         self.train_or_test = train_or_test
         
     def show_parameters(self):
-        pass
+        print 'use data in trainset or testset:',self.train_or_test
+        print 'the number of iterations:',self.N
+        print 'the L1 regularization parameter alpha is:',self.alpha
+        print 'the new image size used is:',self.new_size
+        print 'how much to expand in data preparation:',self.expand
+        print 'the rate of expand in modifing the bbox:',self.expand_rate
+        print 'the number of divisions of gradient angle used by hog:',self.orientations
+        print 'pixels per cell in hog descriptor:',self.pixels_per_cell
+        print 'cells per side in hog decriptor:',self.cells_per_side
+        print 'cells per bolck in hog descriptor:',self.cells_per_block
         
 def train(parameters):
     
@@ -45,22 +55,23 @@ def train(parameters):
     the standard SDM training function
     ---------------------------------------------------------------------------
     INPUT:
-        N: number of train iteration
-        alpha: the coefficient of L1 regularization of Lasso Linear Regression
-        new_size: the final image size
-        expand: number of pixels to expand after crop
-        expand_rate: the rate of new bbox to original bbox
-        orientations: the number of classes of gradient angle histogram in hog
-        pixels_per_cell: a hog feature parameter
-        cells_per_side: a hog feature parameter
-        cells_per_block: a hog feature parameter
+        parameters: the model parameter object
     OUTPUT:
-        regressors: a list containing a sequence of (R,b)
-        initials: a numpy array containing a initial landmarks
+        coef: a numpy array of R
+        inte: a numpy array of b
+        initials: a numpy array containing a initial landmarks (without ravel)
     ---------------------------------------------------------------------------
     '''
+    #show the parameters which will be used
+    parameters.show_parameters()
+    
+    #get the image path list
     image_path_list = get_image_path_list(parameters)
+    
+    #get the ground truth bounding boxes
     bbox_dict = load_boxes(parameters)
+    
+    #compute the hog features of ture landmarks
     mark_list = []
     hog_list = []
     grey_list = []
@@ -73,9 +84,13 @@ def train(parameters):
         
     HOG_TRUE = np.array(hog_list)
     MARK_TRUE = np.array(mark_list)
+    
+    #compute the initial landmarks by mean
     initials = np.mean(MARK_TRUE,axis = 0).astype(int)
     MARK_x = np.array([initials.tolist()] * len(image_path_list))
     initials = initials.reshape(68,2)
+    
+    #training
     coef = []
     inte = []
     
@@ -83,18 +98,23 @@ def train(parameters):
         
         print 'Iteration: ',i + 1
         
+        #compute the delta x
         MARK_delta = MARK_TRUE - MARK_x
+        
+        #compute the hog features
         HOG_x = np.zeros_like(HOG_TRUE)
         for j in range(len(image_path_list)):
             if j+1 % 100 == 0: print 'already computed',j+1,'features'
-            HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2))
+            HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2),parameters)
         
+        #lasso linear regression
         reg = Lasso(alpha=parameters.alpha)
         print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
         coef.append(reg.coef_.T)
         inte.append(reg.intercept_.T)       
-                
+        
+        #compute new landmarks        
         MARK_x = MARK_x + np.matmul(HOG_x, coef[i]) + inte[i]
         
     return np.array(coef),np.array(inte),initials
@@ -102,6 +122,22 @@ def train(parameters):
     
 
 def test_for_one_image(coef,inte,path,bbox,initials,parameters):
+    '''
+    given the regressors, predicted the landmarks
+    ---------------------------------------------------------------------------
+    INPUT:
+        coef: the R matrix
+        inte: the b vector
+        path: the image file name with extension
+        bbox: the numpy array of bbox
+        initials: the numpy array of initials landmarks
+        parameters: model parameter object
+    OUTPUT:
+        mark_x: predicted landmarks
+        mark_t: the true landmarks
+        MSE: the mean square error of all the iterations
+    ---------------------------------------------------------------------------
+    '''
                            
                            
     grey,mark_true = crop_and_resize_image(path[:10],bbox,parameters)
@@ -128,7 +164,7 @@ def get_image_path_list(parameters):
     get a list containing all the paths of images in the trainset
     ---------------------------------------------------------------------------
     INPUT:
-        data_type: 'train' or 'test'  by default is 'train'
+        parameters: model parameter object
     OUTPUT:
         a list with all the images' paths
     ---------------------------------------------------------------------------
@@ -147,7 +183,7 @@ def load_boxes(parameters):
     load the ground truth ground truth boxes coordinates from .mat file
     ---------------------------------------------------------------------------
     INPUT:
-        data_type: 'train' or 'test'  by default is 'train'
+        parameters: model parameter object
     OUTPUT:
         a dict with all the ground truth bounding boxes coordinates
         key: a string of filename    ex: 'image_0122.png'
@@ -168,6 +204,7 @@ def load_landmarks(image_name,parameters):
     ---------------------------------------------------------------------------
     INPUT:
         image_name: a string without extension   ex: 'image_0122'
+        parameters: model parameter object
     OUTPUT:
         a numpy array containing all the points
     ---------------------------------------------------------------------------
@@ -190,9 +227,10 @@ def compute_new_bbox(image_size,bbox,parameters):
     INPUT:
         image_size: a tuple   ex: (height,width)
         bbox: the ground_truth bounding boxes  ex:[x0,y0,x1,y1]
-        expand_rate: the rate to expand the bbox  by default is 0.2
+        parameters: model parameter object
     OUTPUT:
         new bbox: ex:[x0,y0,x1,y1]
+    ---------------------------------------------------------------------------
     '''
     x_size,y_size = image_size
     bx0,by0,bx1,by1 = bbox
@@ -248,8 +286,7 @@ def crop_and_resize_image(image_name,bbox,parameters):
     INPUT:
         image_name: a string without extension  ex: 'image_0007'
         bbox: the ground_truth bounding boxes  ex:[x0,y0,x1,y1]
-        new_size: the size used by the resize function
-        data_type: 'train' or 'test'
+        parameters: model parameter object
     OUTPUT:
         grey: a numpy array of grey image after crop and resize
         landmarks: new landmarks accordance with new image
@@ -281,10 +318,7 @@ def hog(image, xys, parameters):
     INPUT:
         image: grey image, numpy array, 8-bit
         xys: coordinates, numpy array, float
-        orientations: the number that the orientations are divided, int
-        pixels_per_cell: int
-        cells_per_side: int
-        cells_per_block: int
+        parameters: model parameter object
     OUTPUT:
         features: ndarray of all the features extracted from locations in xy
     ---------------------------------------------------------------------------
@@ -293,29 +327,27 @@ def hog(image, xys, parameters):
     if image.ndim > 3: raise ValueError("Currently only supports grey-level images")
 
 
-    '''normalisation'''
+    #normalisation
     image = sqrt(image)
     
     
-    '''---------compute the gradients of the input grey image---------------'''
+    #compute the gradients of the input grey image
     gx = np.zeros(image.shape)
     gy = np.zeros(image.shape)
     gx[:, :-1] = np.diff(image, n=1, axis=1)
     gy[:-1, :] = np.diff(image, n=1, axis=0)
-    '''---------------------------------------------------------------------'''
     
     
-    '''----------compute the magnitude and orientation of gradients---------'''
+    #compute the magnitude and orientation of gradients
     magnitude = sqrt(gx ** 2 + gy ** 2)
     orientation = arctan2(gy, (gx + 1e-15)) * (180 / pi) + 180
-    '''---------------------------------------------------------------------'''
 
     #just for convinients, make the variables shorter
     r = parameters.pixels_per_cell * parameters.cells_per_side
     pc = parameters.pixels_per_cell
     
     
-    '''--------------compute the orientation histogram----------------------'''
+    #compute the orientation histogram
     orientation_histogram = np.zeros((len(xys), 
                                       parameters.cells_per_side*2, 
                                       parameters.cells_per_side*2, 
@@ -333,10 +365,9 @@ def hog(image, xys, parameters):
             temp_mag = np.where(cond2, magnitude, 0)
         
             orientation_histogram[j,:,:,i] = uniform_filter(temp_mag, size=pc)[x-r+pc/2:x+r:pc, y-r+pc/2:y+r:pc].T
-    '''---------------------------------------------------------------------'''
     
     
-    '''----------------compute the block normalization----------------------'''
+    #compute the block normalization
     n_blocks = parameters.cells_per_side * 2 - parameters.cells_per_block + 1
     cb = parameters.cells_per_block
     normalised_blocks = np.zeros((len(xys), n_blocks, n_blocks, cb, cb, parameters.orientations))
@@ -346,7 +377,6 @@ def hog(image, xys, parameters):
             for y in range(n_blocks):
                 block = orientation_histogram[i,x:x + cb, y:y + cb, :]            
                 normalised_blocks[i, x, y, :] = block / sqrt(block.sum() ** 2 + eps)
-    '''---------------------------------------------------------------------'''
     
     return normalised_blocks.ravel()
 
