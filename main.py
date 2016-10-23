@@ -36,10 +36,10 @@ class model_parameters(object):
         self.train_or_test = train_or_test
         
     def show_parameters(self):
-        
-        
+        pass
         
 def train(parameters):
+    
     '''
     the standard SDM training function
     ---------------------------------------------------------------------------
