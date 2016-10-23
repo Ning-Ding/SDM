@@ -35,6 +35,9 @@ class model_parameters(object):
         self.cells_per_side = cells_per_side
         self.train_or_test = train_or_test
         
+    def show_parameters(self):
+        
+        
         
 def train(parameters):
     '''
@@ -254,7 +257,7 @@ def crop_and_resize_image(image_name,bbox,parameters):
     image_path = 'data/' + parameters.train_or_test + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
-    bbox = compute_new_bbox(im.size,bbox,parameters.expand_rate)
+    bbox = compute_new_bbox(im.size,bbox,parameters)
     im_crop = im.crop(bbox)
     Expand = parameters.expand
     im_expand = ImageOps.expand(im_crop,(Expand,Expand,Expand,Expand),fill = 'black')
