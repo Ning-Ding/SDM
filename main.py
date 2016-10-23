@@ -23,8 +23,8 @@ class model_parameters(object):
                  expand_rate=0.2,
                  orientations=9,
                  pixels_per_cell=3,
-                 cells_per_block=1,
-                 cells_per_side=2,
+                 cells_per_block=2,
+                 cells_per_side=1,
                  train_or_test='train'):
         self.N = N
         self.alpha = alpha
