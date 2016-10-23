@@ -13,6 +13,7 @@ from scipy.ndimage import uniform_filter
 from sklearn.linear_model import Lasso
 from math import floor
 
+
 def train(N = 5, 
           alpha = 0.1, 
           new_size = (100,100), 
@@ -119,7 +120,8 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                                       bbox,
                                       new_size=new_size,
                                       expand=expand,
-                                      expand_rate=expand_rate)
+                                      expand_rate=expand_rate,
+                                      train_or_test = 'test')
     mark_x = initials.astype(float)
     MSE = []
     
@@ -181,7 +183,7 @@ def load_boxes(data_type = 'train'):
     return {x[i][0][0]:x[i][1][0] for i in range(len(x))}
     
     
-def load_landmarks(image_name):
+def load_landmarks(image_name,data_type = 'train'):
     '''
     load the landmarks coordinates from .pts file
     ---------------------------------------------------------------------------
@@ -191,7 +193,7 @@ def load_landmarks(image_name):
         a numpy array containing all the points
     ---------------------------------------------------------------------------
     '''   
-    file_path = 'data/trainset/pts/' + image_name + '.pts'  
+    file_path = 'data/' + data_type + 'set/pts/' + image_name + '.pts'  
     assert os.path.exists(file_path)
     with open(file_path) as f: rows = [rows.strip() for rows in f]
     coords_set = [point.split() for point in rows[rows.index('{') + 1:rows.index('}')]]
@@ -259,7 +261,12 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
             nby1 = int(floor(by1 + delta_w))
     return nbx0,nby0,nbx1,nby1
     
-def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train',expand = 100,expand_rate=0.2):
+def crop_and_resize_image(image_name,bbox,
+                            new_size=(100,100),
+                            data_type = 'train',
+                            expand = 100,
+                            expand_rate=0.2
+                            train_or_test='train'):
     '''
     crop and resize the image given the ground truth bounding boxes
     also, compute the new coordinates according to transformation
@@ -284,7 +291,7 @@ def crop_and_resize_image(image_name,bbox,new_size=(100,100),data_type = 'train'
     grey = im_resize.convert('L')
     
     #compute the new landmarks according to transformation procedure
-    landmarks = load_landmarks(image_name)
+    landmarks = load_landmarks(image_name,train_or_test)
     landmarks = landmarks - (bbox[:2]) + expand
     landmarks = landmarks * im_resize.size / im_expand.size
     
