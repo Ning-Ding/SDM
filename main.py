@@ -122,8 +122,12 @@ def train(parameters):
         
         #compute new landmarks        
         MARK_x = MARK_x + np.matmul(HOG_x, coef[i]) + inte[i]
-        
-    return np.array(coef),np.array(inte),initials
+    
+    coef = np.array(coef)
+    inte = np.array(inte)
+    io.savemat('train_data',{'R':coef,'B':inte,'I':initials})
+    
+    return coef,inte,initials
     
     
 
@@ -144,7 +148,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,parameters):
         MSE: the mean square error of all the iterations
     ---------------------------------------------------------------------------
     '''
-                           
+    parameters.train_or_test = 'test'                       
                            
     grey,mark_true = crop_and_resize_image(path[:10],bbox,parameters)
     mark_x = initials.astype(float)
@@ -391,9 +395,21 @@ def hog(image, xys, parameters):
     return normalised_blocks.ravel()
 
 
+def test_after_run_main(n):
+    x,t,m = test_for_one_image(R,B,image_path_list[n],bbox_dict[image_path_list[n]],I,parameters)
+    return x,t,m
 
 #just for the test purpose
 if __name__ == '__main__':
     parameters = model_parameters()
+    if os.path.exist('train_data.mat'):
+        data = io.loadmat('train_data.mat')
+        R = data['R']
+        B = data['B']
+        I = data['I']
+    else:
+        R,B,I = train(parameters)
+    parameters.train_or_test = 'test'
     image_path_list = get_image_path_list(parameters)
     bbox_dict = load_boxes(parameters)
+    
