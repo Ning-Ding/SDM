@@ -144,7 +144,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                                       new_size=new_size,
                                       expand=expand,
                                       expand_rate=expand_rate)
-    mark_x = initials
+    mark_x = initials.astype(float)
     EMS = []
     
     for i in range(coef.shape[0]):
@@ -153,7 +153,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                     pixels_per_cell=pixels_per_cell,
                     cells_per_side=cells_per_side, 
                     cells_per_block=cells_per_block)
-        mark_x += np.matmul(hog_x,coef[i]) + inte[i].astype(float)
+        mark_x = mark_x + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)
         EMS.append(abs(mark_x.astype(int) - mark_true)**2 / len(mark_true))
         
     return mark_x.astype(int),mark_true,EMS
