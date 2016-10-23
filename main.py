@@ -27,6 +27,7 @@ class model_parameters(object):
                  train_or_test='train'):
         self.N = N
         self.alpha = alpha
+        self.new_size=new_size
         self.expand =expand
         self.expand_rate = expand_rate
         self.orientations = orientations
