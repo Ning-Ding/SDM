@@ -6,7 +6,7 @@ Created on Fri Oct 21 19:02:31 2016
 """
 from __future__ import division
 import os
-from PIL import Image,ImageOps
+from PIL import Image,ImageOps,ImageDraw
 import numpy as np
 from scipy import sqrt, pi, arctan2, io
 from scipy.ndimage import uniform_filter
@@ -89,9 +89,7 @@ def train(N = 5,
     return np.array(coef),np.array(inte),initials
     
     
-'''    
-def test(regressors,
-         initials,
+def test(coef,inte,initials,
          new_size = (100,100),
          expand=100, 
          expand_rate = 0.2, 
@@ -99,35 +97,13 @@ def test(regressors,
          pixels_per_cell=3,
          cells_per_side=1, 
          cells_per_block=1):
-    
-    image_path_list = get_image_path_list('test')
+             
+    test_image_path = get_image_path_list('test')
     bbox_dict = load_boxes('test')
-    mark_list = []
-    hog_list = []
-    grey_list = []
-    print 'computing the hog features for ture landmarks...........'
-    for path in image_path_list:
-        grey,mark = crop_and_resize_image(path[:10],
-                                          bbox_dict[path],
-                                          new_size = new_size, 
-                                          expand=expand,
-                                          expand_rate=expand_rate)
-        hog_list.append(hog(grey,mark,
-                            orientations=orientations, 
-                            pixels_per_cell=pixels_per_cell,
-                            cells_per_side=cells_per_side, 
-                            cells_per_block=cells_per_block))
-        grey_list.append(grey)
-        mark_list.append(mark.ravel())
-        
-    HOG_TRUE = np.array(hog_list)
-    MARK_TRUE = np.array(mark_list)
-    MARK_x = np.array([np.mean(MARK_TRUE,axis = 0).astype(int).tolist()] * len(image_path_list))
-    regressors = []
-'''    
-    
-    
-    
+    pass
+
+
+
     
 def test_for_one_image(coef,inte,path,bbox,initials,
                        new_size = (100,100),
@@ -155,6 +131,12 @@ def test_for_one_image(coef,inte,path,bbox,initials,
                     cells_per_block=cells_per_block)
         mark_x = (mark_x.ravel() + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)).reshape(68,2)
         MSE.append((abs(mark_x.astype(int) - mark_true)**2).sum() / len(mark_true))
+        
+    im = Image.fromarray(grey)
+    draw = ImageDraw.Draw(im)
+    draw.point(mark_x,fill = 'red')
+    im.show()
+    
         
     return mark_x.astype(int),mark_true,MSE
 
