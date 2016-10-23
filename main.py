@@ -402,7 +402,7 @@ def test_after_run_main(n):
 #just for the test purpose
 if __name__ == '__main__':
     parameters = model_parameters()
-    if os.path.exist('train_data.mat'):
+    if os.path.exists('train_data.mat'):
         data = io.loadmat('train_data.mat')
         R = data['R']
         B = data['B']
