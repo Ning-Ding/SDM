@@ -163,7 +163,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,parameters):
     draw = ImageDraw.Draw(im)
     width = 5
     for i in range(mark_x):
-        circle = [mark_x[i,0]-width,mark_x[i,1]_width,mark_x[i,0]+width,mark_x[i,1]+width]
+        circle = [mark_x[i,0]-width,mark_x[i,1]-width,mark_x[i,0]+width,mark_x[i,1]+width]
         draw.ellipse(circle,fill = 'red')
     
     im.show()
