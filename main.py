@@ -266,7 +266,7 @@ def crop_and_resize_image(image_name,bbox,parameters):
     grey = im_resize.convert('L')
     
     #compute the new landmarks according to transformation procedure
-    landmarks = load_landmarks(image_name,parameters.train_or_test)
+    landmarks = load_landmarks(image_name,parameters)
     landmarks = landmarks - (bbox[:2]) + Expand
     landmarks = landmarks * im_resize.size / im_expand.size
     
