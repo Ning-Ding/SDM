@@ -13,16 +13,30 @@ from scipy.ndimage import uniform_filter
 from sklearn.linear_model import Lasso
 from math import floor
 
-
-def train(N = 5, 
-          alpha = 0.1, 
-          new_size = (100,100), 
-          expand=100, 
-          expand_rate = 0.2, 
-          orientations=9, 
-          pixels_per_cell=3,
-          cells_per_side=1, 
-          cells_per_block=1):
+class model_parameters(object):
+    def __init__(self,
+                 N=5,
+                 alpha=0.1,
+                 new_size=(400,400),
+                 expand=100,
+                 expand_rate=0.2,
+                 orientations=9,
+                 pixels_per_cell=3,
+                 cells_per_block=3,
+                 cells_per_side=2,
+                 train_or_test='train'):
+        self.N = N
+        self.alpha = alpha
+        self.expand =expand
+        self.expand_rate = expand_rate
+        self.orientations = orientations
+        self.pixels_per_cell = pixels_per_cell
+        self.cells_per_block = cells_per_block
+        self.cells_per_side = cells_per_side
+        self.train_or_test = train_or_test
+        
+        
+def train(parameters):
     '''
     the standard SDM training function
     ---------------------------------------------------------------------------
@@ -41,23 +55,15 @@ def train(N = 5,
         initials: a numpy array containing a initial landmarks
     ---------------------------------------------------------------------------
     '''
-    image_path_list = get_image_path_list()
-    bbox_dict = load_boxes()
+    image_path_list = get_image_path_list(parameters)
+    bbox_dict = load_boxes(parameters)
     mark_list = []
     hog_list = []
     grey_list = []
     print 'computing the hog features for ture landmarks...........'
     for path in image_path_list:
-        grey,mark = crop_and_resize_image(path[:10],
-                                          bbox_dict[path],
-                                          new_size = new_size, 
-                                          expand=expand,
-                                          expand_rate=expand_rate)
-        hog_list.append(hog(grey,mark,
-                            orientations=orientations, 
-                            pixels_per_cell=pixels_per_cell,
-                            cells_per_side=cells_per_side, 
-                            cells_per_block=cells_per_block))
+        grey,mark = crop_and_resize_image(path[:10],bbox_dict[path],parameters)
+        hog_list.append(hog(grey,mark,parameters))
         grey_list.append(grey)
         mark_list.append(mark.ravel())
         
@@ -69,7 +75,7 @@ def train(N = 5,
     coef = []
     inte = []
     
-    for i in range(N):
+    for i in range(parameters.N):
         
         print 'Iteration: ',i + 1
         
@@ -79,7 +85,7 @@ def train(N = 5,
             if j+1 % 100 == 0: print 'already computed',j+1,'features'
             HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2))
         
-        reg = Lasso(alpha=alpha)
+        reg = Lasso(alpha=parameters.alpha)
         print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
         coef.append(reg.coef_.T)
@@ -90,47 +96,16 @@ def train(N = 5,
     return np.array(coef),np.array(inte),initials
     
     
-def test(coef,inte,initials,
-         new_size = (100,100),
-         expand=100, 
-         expand_rate = 0.2, 
-         orientations=9, 
-         pixels_per_cell=3,
-         cells_per_side=1, 
-         cells_per_block=1):
-             
-    test_image_path = get_image_path_list('test')
-    bbox_dict = load_boxes('test')
-    pass
 
-
-
-    
-def test_for_one_image(coef,inte,path,bbox,initials,
-                       new_size = (100,100),
-                       expand=100, 
-                       expand_rate = 0.2, 
-                       orientations=9, 
-                       pixels_per_cell=3,
-                       cells_per_side=1, 
-                       cells_per_block=1):
+def test_for_one_image(coef,inte,path,bbox,initials,parameters):
                            
                            
-    grey,mark_true = crop_and_resize_image(path[:10],
-                                      bbox,
-                                      new_size=new_size,
-                                      expand=expand,
-                                      expand_rate=expand_rate,
-                                      train_or_test = 'test')
+    grey,mark_true = crop_and_resize_image(path[:10],bbox,parameters)
     mark_x = initials.astype(float)
     MSE = []
     
     for i in range(coef.shape[0]):
-        hog_x = hog(grey,mark_x,
-                    orientations=orientations, 
-                    pixels_per_cell=pixels_per_cell,
-                    cells_per_side=cells_per_side, 
-                    cells_per_block=cells_per_block)
+        hog_x = hog(grey,mark_x,parameters)
         mark_x = (mark_x.ravel() + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)).reshape(68,2)
         MSE.append((abs(mark_x.astype(int) - mark_true)**2).sum() / len(mark_true))
         
@@ -144,7 +119,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,
 
 
 
-def get_image_path_list(data_type='train'):
+def get_image_path_list(parameters):
     '''
     get a list containing all the paths of images in the trainset
     ---------------------------------------------------------------------------
@@ -154,7 +129,7 @@ def get_image_path_list(data_type='train'):
         a list with all the images' paths
     ---------------------------------------------------------------------------
     '''
-    folder_path = 'data/' + data_type + 'set/png'
+    folder_path = 'data/' + parameters.train_or_test + 'set/png'
     assert os.path.exists(folder_path)
     assert os.path.isdir(folder_path)
     print 'already get all the image path.'
@@ -163,7 +138,7 @@ def get_image_path_list(data_type='train'):
 
 
 
-def load_boxes(data_type = 'train'):
+def load_boxes(parameters):
     '''
     load the ground truth ground truth boxes coordinates from .mat file
     ---------------------------------------------------------------------------
@@ -175,7 +150,7 @@ def load_boxes(data_type = 'train'):
         value: a numpy array of boungding boxes
     ---------------------------------------------------------------------------
     '''
-    file_path = 'data/bounding_boxes/bounding_boxes_lfpw_' + data_type + 'set.mat'
+    file_path = 'data/bounding_boxes/bounding_boxes_lfpw_' + parameters.train_or_test + 'set.mat'
     assert os.path.exists(file_path)
     x = io.loadmat(file_path)['bounding_boxes'][0]
     x = [x[0][0] for x in x]
@@ -183,7 +158,7 @@ def load_boxes(data_type = 'train'):
     return {x[i][0][0]:x[i][1][0] for i in range(len(x))}
     
     
-def load_landmarks(image_name,data_type = 'train'):
+def load_landmarks(image_name,parameters):
     '''
     load the landmarks coordinates from .pts file
     ---------------------------------------------------------------------------
@@ -193,7 +168,7 @@ def load_landmarks(image_name,data_type = 'train'):
         a numpy array containing all the points
     ---------------------------------------------------------------------------
     '''   
-    file_path = 'data/' + data_type + 'set/pts/' + image_name + '.pts'  
+    file_path = 'data/' + parameters.train_or_test + 'set/pts/' + image_name + '.pts'  
     assert os.path.exists(file_path)
     with open(file_path) as f: rows = [rows.strip() for rows in f]
     coords_set = [point.split() for point in rows[rows.index('{') + 1:rows.index('}')]]
@@ -202,7 +177,7 @@ def load_landmarks(image_name,data_type = 'train'):
 
 
 
-def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
+def compute_new_bbox(image_size,bbox,parameters):
     '''
     compute the expanded bbox
     a robust function to expand the crop image bbox even the original bbox is
@@ -220,7 +195,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
     bw = by1 - by0
     bh = bx1 - bx0
     if bw > bh:
-        delta = expand_rate * bw
+        delta = parameters.expand_rate * bw
         if by1 + delta > y_size:
             nby1 = y_size
         else:
@@ -240,7 +215,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
         else:
             nbx1 = int(floor(bx1 + delta_h))
     else:
-        delta = expand_rate * bh
+        delta = parameters.expand_rate * bh
         if bx1 + delta > x_size:
             nbx1 = x_size
         else:
@@ -261,12 +236,7 @@ def compute_new_bbox(image_size,bbox,expand_rate = 0.2):
             nby1 = int(floor(by1 + delta_w))
     return nbx0,nby0,nbx1,nby1
     
-def crop_and_resize_image(image_name,bbox,
-                            new_size=(100,100),
-                            data_type = 'train',
-                            expand = 100,
-                            expand_rate=0.2,
-                            train_or_test='train'):
+def crop_and_resize_image(image_name,bbox,parameters):
     '''
     crop and resize the image given the ground truth bounding boxes
     also, compute the new coordinates according to transformation
@@ -281,24 +251,25 @@ def crop_and_resize_image(image_name,bbox,
         landmarks: new landmarks accordance with new image
     ---------------------------------------------------------------------------
     '''
-    image_path = 'data/' + train_or_test + 'set/png/' + image_name + '.png'
+    image_path = 'data/' + parameters.train_or_test + 'set/png/' + image_name + '.png'
     assert os.path.exists(image_path)
     im = Image.open(image_path)
-    bbox = compute_new_bbox(im.size,bbox,expand_rate)
+    bbox = compute_new_bbox(im.size,bbox,parameters.expand_rate)
     im_crop = im.crop(bbox)
-    im_expand = ImageOps.expand(im_crop,(expand,expand,expand,expand),fill = 'black')
-    im_resize = im_expand.resize(new_size)
+    Expand = parameters.expand
+    im_expand = ImageOps.expand(im_crop,(Expand,Expand,Expand,Expand),fill = 'black')
+    im_resize = im_expand.resize(parameters.new_size)
     grey = im_resize.convert('L')
     
     #compute the new landmarks according to transformation procedure
-    landmarks = load_landmarks(image_name,train_or_test)
-    landmarks = landmarks - (bbox[:2]) + expand
+    landmarks = load_landmarks(image_name,parameters.train_or_test)
+    landmarks = landmarks - (bbox[:2]) + Expand
     landmarks = landmarks * im_resize.size / im_expand.size
     
     return np.array(grey),landmarks.astype(int)
 
 
-def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_per_block=1):
+def hog(image, xys, parameters):
     '''
     Given a grey image in numpy array and a vector of sequence of coordinates,
     return the ndarray of hog feature vectors extract from given locations
@@ -336,19 +307,22 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
     '''---------------------------------------------------------------------'''
 
     #just for convinients, make the variables shorter
-    r = pixels_per_cell * cells_per_side
-    pc = pixels_per_cell
+    r = parameters.pixels_per_cell * parameters.cells_per_side
+    pc = parameters.pixels_per_cell
     
     
     '''--------------compute the orientation histogram----------------------'''
-    orientation_histogram = np.zeros((len(xys), cells_per_side*2, cells_per_side*2, orientations))    
+    orientation_histogram = np.zeros((len(xys), 
+                                      parameters.cells_per_side*2, 
+                                      parameters.cells_per_side*2, 
+                                      parameters.orientations))    
     for j in range(len(xys)):        
         x, y = xys[j]
-        for i in range(orientations):
+        for i in range(parameters.orientations):
             # classify the orientation of the gradients
-            temp_ori = np.where(orientation <= 180 / orientations * (i + 1) * 2,
+            temp_ori = np.where(orientation <= 180 / parameters.orientations * (i + 1) * 2,
                                 orientation, 0)
-            temp_ori = np.where(orientation > 180 / orientations * i * 2,
+            temp_ori = np.where(orientation > 180 / parameters.orientations * i * 2,
                                 temp_ori, 0)
             # select magnitudes for those orientations
             cond2 = temp_ori > 0
@@ -359,9 +333,9 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
     
     
     '''----------------compute the block normalization----------------------'''
-    n_blocks = cells_per_side * 2 - cells_per_block + 1
-    cb = cells_per_block
-    normalised_blocks = np.zeros((len(xys), n_blocks, n_blocks, cb, cb, orientations))
+    n_blocks = parameters.cells_per_side * 2 - parameters.cells_per_block + 1
+    cb = parameters.cells_per_block
+    normalised_blocks = np.zeros((len(xys), n_blocks, n_blocks, cb, cb, parameters.orientations))
     eps = 1e-5
     for i in range(len(xys)):
         for x in range(n_blocks):
@@ -376,5 +350,6 @@ def hog(image, xys, orientations=9, pixels_per_cell=3,cells_per_side=1, cells_pe
 
 #just for the test purpose
 if __name__ == '__main__':
-    image_path_list = get_image_path_list('test')
-    bbox_dict = load_boxes('test')
+    parameters = model_parameters()
+    image_path_list = get_image_path_list(parameters)
+    bbox_dict = load_boxes(parameters)
