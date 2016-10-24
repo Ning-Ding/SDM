@@ -10,14 +10,14 @@ from PIL import Image,ImageOps,ImageDraw
 import numpy as np
 from scipy import sqrt, pi, arctan2, io
 from scipy.ndimage import uniform_filter
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso,LinearRegression
 from math import floor
 
 class model_parameters(object):
     
     def __init__(self,
                  N=5,
-                 alpha=0.1,
+                 alpha=0,
                  new_size=(200,200),
                  expand=100,
                  expand_rate=0.2,
@@ -112,8 +112,11 @@ def train(parameters):
             if j+1 % 100 == 0: print 'already computed',j+1,'features'
             HOG_x[j,:] = hog(grey_list[j],MARK_x[j,:].reshape(68,2),parameters)
         
-        #lasso linear regression
-        reg = Lasso(alpha=parameters.alpha)
+        #linear regression
+        if parameters.alpha == 0:
+            reg = LinearRegression()
+        else:
+            reg = Lasso(alpha=parameters.alpha)
         print 'computing the lasso linear regression.......'
         reg.fit(HOG_x,MARK_delta)  
         coef.append(reg.coef_.T)
