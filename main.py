@@ -25,7 +25,8 @@ class model_parameters(object):
                  pixels_per_cell=3,
                  cells_per_block=2,
                  cells_per_side=1,
-                 train_or_test='train'):
+                 train_or_test='train'
+                 hog_no_block=True):
         self.N = N
         self.alpha = alpha
         self.new_size=new_size
@@ -36,6 +37,7 @@ class model_parameters(object):
         self.cells_per_block = cells_per_block
         self.cells_per_side = cells_per_side
         self.train_or_test = train_or_test
+        self.hog_no_block = hog_no_block
         
     def show_parameters(self):
         print 'use data in trainset or testset:',self.train_or_test
@@ -48,6 +50,7 @@ class model_parameters(object):
         print 'pixels per cell in hog descriptor:',self.pixels_per_cell
         print 'cells per side in hog decriptor:',self.cells_per_side
         print 'cells per bolck in hog descriptor:',self.cells_per_block
+        print 'do not use the block when computing the hog:',self.hog_no_block
         
 def train(parameters):
     
@@ -359,7 +362,7 @@ def hog(image, xys, parameters):
     #just for convinients, make the variables shorter
     r = parameters.pixels_per_cell * parameters.cells_per_side
     pc = parameters.pixels_per_cell
-    
+    eps = 1e-5
     
     #compute the orientation histogram
     orientation_histogram = np.zeros((len(xys), 
@@ -379,13 +382,18 @@ def hog(image, xys, parameters):
             temp_mag = np.where(cond2, magnitude, 0)
         
             orientation_histogram[j,:,:,i] = uniform_filter(temp_mag, size=pc)[x-r+pc/2:x+r:pc, y-r+pc/2:y+r:pc].T
+        
+        if parameters.hog_no_block:
+            orientation_histogram[j] /= sqrt(orientition_histogram[j].sum()**2 + eps)
     
+    if parameters.hog_no_block: return orientation_histogram.ravel()
+        
     
     #compute the block normalization
     n_blocks = parameters.cells_per_side * 2 - parameters.cells_per_block + 1
     cb = parameters.cells_per_block
     normalised_blocks = np.zeros((len(xys), n_blocks, n_blocks, cb, cb, parameters.orientations))
-    eps = 1e-5
+    
     for i in range(len(xys)):
         for x in range(n_blocks):
             for y in range(n_blocks):
