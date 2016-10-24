@@ -16,15 +16,15 @@ from math import floor
 class model_parameters(object):
     
     def __init__(self,
-                 N=5,
+                 N=3,
                  alpha=0,
-                 new_size=(200,200),
-                 expand=100,
+                 new_size=(100,100),
+                 expand=50,
                  expand_rate=0.2,
                  orientations=4,
-                 pixels_per_cell=5,
+                 pixels_per_cell=3,
                  cells_per_block=2,
-                 cells_per_side=2,
+                 cells_per_side=1,
                  train_or_test='train',
                  hog_no_block=True):
         self.N = N
@@ -114,7 +114,7 @@ def train(parameters):
         
         #linear regression
         if parameters.alpha == 0:
-            reg = LinearRegression()
+            reg = LinearRegression(fit_intercept=False)
         else:
             reg = Lasso(alpha=parameters.alpha)
         print 'computing the lasso linear regression.......'
