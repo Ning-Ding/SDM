@@ -26,7 +26,8 @@ class model_parameters(object):
                  cells_per_block=2,
                  cells_per_side=1,
                  train_or_test='train',
-                 hog_no_block=True):
+                 hog_no_block=True,
+                 demo=False):
         self.N = N
         self.alpha = alpha
         self.new_size=new_size
@@ -38,6 +39,7 @@ class model_parameters(object):
         self.cells_per_side = cells_per_side
         self.train_or_test = train_or_test
         self.hog_no_block = hog_no_block
+        self.demo = demo
         
     def show_parameters(self):
         print 'use data in trainset or testset:',self.train_or_test
@@ -165,14 +167,15 @@ def test_for_one_image(coef,inte,path,bbox,initials,parameters):
         mark_x = (mark_x.ravel() + np.matmul(hog_x,coef[i]).astype(float) + inte[i].astype(float)).reshape(68,2)
         MSE.append((abs(mark_x.astype(int) - mark_true)**2).sum() / len(mark_true))
         
-    im = Image.fromarray(grey)
-    draw = ImageDraw.Draw(im)
-    width = 5
-    for i in range(len(mark_x)):
-        circle = [mark_x[i,0]-width,mark_x[i,1]-width,mark_x[i,0]+width,mark_x[i,1]+width]
-        draw.ellipse(circle,fill = 'red')
+    if parameters.demo:
+        im = Image.fromarray(grey)
+        draw = ImageDraw.Draw(im)
+        width = 5
+        for i in range(len(mark_x)):
+            circle = [mark_x[i,0]-width,mark_x[i,1]-width,mark_x[i,0]+width,mark_x[i,1]+width]
+            draw.ellipse(circle,fill = 'red')
     
-    im.show()
+        im.show()
     
         
     return mark_x.astype(int),mark_true,MSE
