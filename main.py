@@ -21,10 +21,10 @@ class model_parameters(object):
                  new_size=(200,200),
                  expand=100,
                  expand_rate=0.2,
-                 orientations=9,
-                 pixels_per_cell=3,
+                 orientations=4,
+                 pixels_per_cell=5,
                  cells_per_block=2,
-                 cells_per_side=1,
+                 cells_per_side=2,
                  train_or_test='train',
                  hog_no_block=True):
         self.N = N
@@ -407,7 +407,6 @@ def test_after_run_main(n):
     x,t,m = test_for_one_image(R,B,image_path_list[n],bbox_dict[image_path_list[n]],I,parameters)
     return x,t,m
 
-#just for the test purpose
 if __name__ == '__main__':
     parameters = model_parameters()
     if os.path.exists('train_data.mat'):
