@@ -157,7 +157,7 @@ def test_for_one_image(coef,inte,path,bbox,initials,parameters):
     parameters.train_or_test = 'test'                       
                            
     grey,mark_true = crop_and_resize_image(path[:10],bbox,parameters)
-    mark_x = initials.astype(float)
+    mark_x = initials.astype(int)
     MSE = []
     
     for i in range(coef.shape[0]):
@@ -373,7 +373,7 @@ def hog(image, xys, parameters):
                                       parameters.cells_per_side*2, 
                                       parameters.orientations))    
     for j in range(len(xys)):        
-        x, y = xys[j]
+        x, y = xys[j].astype(int)
         for i in range(parameters.orientations):
             # classify the orientation of the gradients
             temp_ori = np.where(orientation <= 180 / parameters.orientations * (i + 1) * 2,
