@@ -25,7 +25,7 @@ class model_parameters(object):
                  pixels_per_cell=3,
                  cells_per_block=2,
                  cells_per_side=1,
-                 train_or_test='train'
+                 train_or_test='train',
                  hog_no_block=True):
         self.N = N
         self.alpha = alpha
