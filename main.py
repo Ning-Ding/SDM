@@ -17,7 +17,7 @@ class model_parameters(object):
     
     def __init__(self,
                  N=3,
-                 alpha=0,
+                 alpha=0.01,
                  new_size=(100,100),
                  expand=50,
                  expand_rate=0.2,
