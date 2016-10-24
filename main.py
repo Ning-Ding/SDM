@@ -384,7 +384,7 @@ def hog(image, xys, parameters):
             orientation_histogram[j,:,:,i] = uniform_filter(temp_mag, size=pc)[x-r+pc/2:x+r:pc, y-r+pc/2:y+r:pc].T
         
         if parameters.hog_no_block:
-            orientation_histogram[j] /= sqrt(orientition_histogram[j].sum()**2 + eps)
+            orientation_histogram[j] /= sqrt(orientation_histogram[j].sum()**2 + eps)
     
     if parameters.hog_no_block: return orientation_histogram.ravel()
         
