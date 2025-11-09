@@ -316,4 +316,4 @@ Project Link: [https://github.com/Ning-Ding/SDM](https://github.com/Ning-Ding/SD
 
 ---
 
-*本项目重构于 2024年，使用现代 Python 技术栈，专注于算法教学与理解。*
+*本项目重构于 2025年，使用现代 Python 技术栈，专注于算法教学与理解。*
