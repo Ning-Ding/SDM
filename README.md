@@ -10,7 +10,7 @@
 
 ## 📖 项目简介
 
-本项目是对 10 年前（2016年）的经典面部对齐算法 **SDM (Supervised Descent Method)** 的全面重构与升级。虽然原项目的实际应用价值已经有限，但对于**理解计算机视觉中的经典算法**、**对比传统方法与深度学习方法**具有重要的教学意义。
+本项目是对 2016 年的经典面部对齐算法 **SDM (Supervised Descent Method)** 的全面重构与升级。虽然原项目的实际应用价值已经有限，但对于**理解计算机视觉中的经典算法**、**对比传统方法与深度学习方法**具有重要的教学意义。
 
 ### 🎯 项目目标
 
@@ -142,18 +142,13 @@ python examples/compare_methods.py --data-root data/ \
 
 ## 📚 教学 Notebooks
 
-我们提供了 8 个详细的 Jupyter Notebooks，涵盖从理论到实践的完整内容：
+我们提供了详细的 Jupyter Notebooks，涵盖从理论到实践的完整内容：
 
 | Notebook | 主题 | 内容 |
 |----------|------|------|
 | [00_setup_and_data.ipynb](notebooks/00_setup_and_data.ipynb) | 环境配置与数据准备 | 安装依赖、数据集介绍、数据加载与可视化 |
-| [01_theory_sdm.ipynb](notebooks/01_theory_sdm.ipynb) | SDM 算法原理 | 监督下降方法的数学推导和直观理解 |
-| [02_theory_hog.ipynb](notebooks/02_theory_hog.ipynb) | HOG 特征原理 | 方向梯度直方图的原理与可视化 |
-| [03_implementation_data.ipynb](notebooks/03_implementation_data.ipynb) | 数据处理实现 | 图像预处理、bbox 处理、数据增强 |
-| [04_implementation_features.ipynb](notebooks/04_implementation_features.ipynb) | 特征提取实现 | HOG 特征提取的详细实现 |
-| [05_implementation_training.ipynb](notebooks/05_implementation_training.ipynb) | 训练过程详解 | SDM 训练流程、Lasso 回归、迭代优化 |
-| [06_evaluation.ipynb](notebooks/06_evaluation.ipynb) | 评估与分析 | 模型评估、误差分析、可视化 |
-| [07_pytorch_comparison.ipynb](notebooks/07_pytorch_comparison.ipynb) | 深度学习方法对比 | CNN vs SDM 性能对比与分析 |
+
+> 📝 **注意**：更多教学 Notebooks 正在开发中，将陆续覆盖算法原理、特征提取、训练过程、评估分析等内容。
 
 ### 启动 Jupyter
 
@@ -173,7 +168,7 @@ jupyter lab
 SDM/
 ├── sdm/                        # 核心库
 │   ├── core/                   # SDM 核心算法
-│   │   ├── model.py           # 配置类
+│   │   ├── model.py           # 模型配置类
 │   │   └── sdm.py             # SDM 主类
 │   ├── features/              # 特征提取
 │   │   └── hog.py             # HOG 特征
@@ -268,9 +263,10 @@ uv run pytest --cov=sdm --cov-report=html
 
 - [安装指南](docs/tutorials/installation.md)
 - [快速开始](docs/tutorials/quickstart.md)
-- [SDM 算法原理](docs/theory/sdm_algorithm.md)
-- [HOG 特征详解](docs/theory/hog_feature.md)
-- [API 文档](docs/api/)
+- [Bug 修复记录](docs/bug_fixes.md)
+- [坐标系统修复详情](docs/coordinate_bug_fixes.md)
+
+> 📝 **注意**：算法原理文档、API 参考文档等正在完善中。
 
 ---
 
@@ -290,9 +286,7 @@ uv run pytest --cov=sdm --cov-report=html
 
 ## 📧 联系方式
 
-Ning Ding - dingning@example.com
-
-Project Link: [https://github.com/Ning-Ding/SDM](https://github.com/Ning-Ding/SDM)
+项目链接: [https://github.com/Ning-Ding/SDM](https://github.com/Ning-Ding/SDM)
 
 ---
 
@@ -316,4 +310,4 @@ Project Link: [https://github.com/Ning-Ding/SDM](https://github.com/Ning-Ding/SD
 
 ---
 
-*本项目重构于 2024年，使用现代 Python 技术栈，专注于算法教学与理解。*
+*本项目重构于 2025年，使用现代 Python 技术栈，专注于算法教学与理解。*

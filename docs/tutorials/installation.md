@@ -52,7 +52,7 @@ uv sync --extra all
 python -m venv venv
 source venv/bin/activate  # Linux/macOS
 # 或
-venv\\Scripts\\activate  # Windows
+venv\Scripts\activate  # Windows
 
 # 安装项目
 pip install -e .
