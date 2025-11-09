@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- 🐛 **WingLoss CUDA device mismatch**: Fixed critical bug where `WingLoss.C` was created on CPU but not transferred to CUDA with the model, causing immediate training failure when using CUDA. Now properly registered as a buffer using `register_buffer()`.
+
 ## [2.0.0] - 2024-11-08
 
 ### 🎉 完全重构
