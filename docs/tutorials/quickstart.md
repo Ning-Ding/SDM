@@ -207,8 +207,8 @@ save_landmarks(landmarks_pred, "output/result.txt", format="txt")
 ## 下一步
 
 - 📚 浏览 [教学 Notebooks](../../notebooks/)
-- 📖 阅读 [算法原理文档](../theory/sdm_algorithm.md)
-- 🎨 尝试 [Streamlit Web 应用](../../examples/streamlit_app.py)
+- 📖 阅读 [Bug 修复记录](../bug_fixes.md)
+- 📊 运行 [示例脚本](../../examples/)
 - 🧪 运行 [单元测试](../../tests/)
 
 ## 获取帮助
@@ -217,4 +217,4 @@ save_landmarks(landmarks_pred, "output/result.txt", format="txt")
 
 1. 查看 [文档](../)
 2. 查看 [Issues](https://github.com/Ning-Ding/SDM/issues)
-3. 查看 [FAQ](../faq.md)
+3. 查看项目 [README](../../README.md)
