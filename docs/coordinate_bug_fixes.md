@@ -1,6 +1,6 @@
 # Critical Coordinate System Bug Fixes
 
-**Date**: 2024-11-08
+**Date**: 2025-11-08
 **Severity**: CRITICAL
 **Impact**: All training and inference affected
 **Status**: ✅ Fixed in commit `978bf00`
@@ -328,4 +328,4 @@ These bugs demonstrate the importance of:
 
 ---
 
-*Last updated: 2024-11-08*
+*Last updated: 2025-11-08*

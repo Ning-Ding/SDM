@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🐛 **SDM evaluate IndexError with config mismatch**: Fixed crash in `SDM.evaluate()` when a model trained with `n_iterations=N` is loaded with a config having different `n_iterations=M`. The `mse_per_iteration` buffer is now sized from `len(self.regressors)` (actual model) instead of `self.config.n_iterations` (current config), preventing IndexError when iterating over regressors.
 
-## [2.0.0] - 2024-11-08
+## [2.0.0] - 2025-11-08
 
 ### 🎉 完全重构
 
@@ -95,7 +95,7 @@ from main import model_parameters, train
 parameters = model_parameters(N=3, alpha=0.001)
 R, B, I = train(parameters)
 
-# 新代码 (2024)
+# 新代码 (2025)
 from sdm import SDM, SDMConfig
 from sdm.data.dataset import LFPWDataset
 
