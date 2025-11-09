@@ -1,0 +1,25 @@
+# Default SDM Configuration
+
+# Algorithm parameters
+n_iterations: 3
+alpha: 0.001
+
+# Image preprocessing
+image_size: [400, 400]
+expand_pixels: 50
+expand_rate: 0.2
+
+# HOG feature parameters
+orientations: 4
+pixels_per_cell: 3
+cells_per_block: 2
+cells_per_side: 1
+hog_no_block: true
+
+# Runtime
+mode: train
+verbose: true
+device: cpu
+
+# Landmark parameters
+n_landmarks: 68

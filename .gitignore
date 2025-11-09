@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Data (only root data directory, not sdm/data code module)
+/data/
+/datasets/
+*.mat
+*.h5
+*.pkl
+*.pth
+*.ckpt
+
+# Models
+/models/
+/checkpoints/
+train_data.mat
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Type checking
+.mypy_cache/
+.pytype/
+
+# Ruff
+.ruff_cache/
+
+# Logs
+logs/
+*.log
