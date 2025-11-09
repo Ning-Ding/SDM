@@ -194,7 +194,8 @@ class SDM:
             print(f"\nEvaluating on {len(dataset)} samples...")
 
         errors = []
-        mse_per_iteration = [[] for _ in range(self.config.n_iterations)]
+        # Size based on actual model (handles loaded models with different n_iterations)
+        mse_per_iteration = [[] for _ in range(len(self.regressors))]
 
         for idx in tqdm(range(len(dataset)), disable=not self.config.verbose):
             image, landmarks_true, _ = dataset[idx]

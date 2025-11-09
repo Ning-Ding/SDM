@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - 🐛 **WingLoss CUDA device mismatch**: Fixed critical bug where `WingLoss.C` was created on CPU but not transferred to CUDA with the model, causing immediate training failure when using CUDA. Now properly registered as a buffer using `register_buffer()`.
 
+- 🐛 **SDM evaluate IndexError with config mismatch**: Fixed crash in `SDM.evaluate()` when a model trained with `n_iterations=N` is loaded with a config having different `n_iterations=M`. The `mse_per_iteration` buffer is now sized from `len(self.regressors)` (actual model) instead of `self.config.n_iterations` (current config), preventing IndexError when iterating over regressors.
+
 ## [2.0.0] - 2024-11-08
 
 ### 🎉 完全重构
