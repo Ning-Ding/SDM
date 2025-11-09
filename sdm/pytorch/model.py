@@ -218,7 +218,9 @@ class WingLoss(nn.Module):
         super().__init__()
         self.omega = omega
         self.epsilon = epsilon
-        self.C = self.omega - self.omega * torch.log(torch.tensor(1.0 + self.omega / self.epsilon))
+        # Register C as a buffer so it moves with the model to the correct device
+        C = self.omega - self.omega * torch.log(torch.tensor(1.0 + self.omega / self.epsilon))
+        self.register_buffer('C', C)
 
     def forward(self, pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Compute Wing Loss.
