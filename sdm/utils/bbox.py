@@ -39,37 +39,38 @@ def expand_bbox(
     x0, y0, x1, y1 = bbox
 
     # Calculate current dimensions
-    bbox_width = y1 - y0
-    bbox_height = x1 - x0
+    # x is horizontal (width), y is vertical (height)
+    bbox_width = x1 - x0
+    bbox_height = y1 - y0
 
     # Expand based on larger dimension to maintain aspect ratio
     if bbox_width > bbox_height:
         # Width is larger - expand width first, then match height
         delta = expand_rate * bbox_width
 
-        # Expand width with boundary checking
-        new_y1 = min(width, int(y1 + delta))
-        new_y0 = max(0, int(y0 - delta))
-        new_width = new_y1 - new_y0
+        # Expand width with boundary checking (x range is [0, width])
+        new_x1 = min(width, int(x1 + delta))
+        new_x0 = max(0, int(x0 - delta))
+        new_width = new_x1 - new_x0
 
         # Expand height to match
         delta_h = (new_width - bbox_height) / 2
-        new_x0 = max(0, int(x0 - delta_h))
-        new_x1 = min(height, int(x1 + delta_h))
+        new_y0 = max(0, int(y0 - delta_h))
+        new_y1 = min(height, int(y1 + delta_h))
 
     else:
         # Height is larger - expand height first, then match width
         delta = expand_rate * bbox_height
 
-        # Expand height with boundary checking
-        new_x1 = min(height, int(x1 + delta))
-        new_x0 = max(0, int(x0 - delta))
-        new_height = new_x1 - new_x0
+        # Expand height with boundary checking (y range is [0, height])
+        new_y1 = min(height, int(y1 + delta))
+        new_y0 = max(0, int(y0 - delta))
+        new_height = new_y1 - new_y0
 
         # Expand width to match
         delta_w = (new_height - bbox_width) / 2
-        new_y0 = max(0, int(y0 - delta_w))
-        new_y1 = min(width, int(y1 + delta_w))
+        new_x0 = max(0, int(x0 - delta_w))
+        new_x1 = min(width, int(x1 + delta_w))
 
     return new_x0, new_y0, new_x1, new_y1
 
@@ -84,17 +85,20 @@ def bbox_to_square(bbox: NDArray[np.float32]) -> NDArray[np.float32]:
         Square bounding box
     """
     x0, y0, x1, y1 = bbox
-    width = y1 - y0
-    height = x1 - x0
+    # x is horizontal (width), y is vertical (height)
+    width = x1 - x0
+    height = y1 - y0
 
     if width > height:
+        # Expand height to match width
         delta = (width - height) / 2
-        x0 -= delta
-        x1 += delta
-    else:
-        delta = (height - width) / 2
         y0 -= delta
         y1 += delta
+    else:
+        # Expand width to match height
+        delta = (height - width) / 2
+        x0 -= delta
+        x1 += delta
 
     return np.array([x0, y0, x1, y1], dtype=np.float32)
 
@@ -115,9 +119,10 @@ def clip_bbox(
     height, width = image_size
     x0, y0, x1, y1 = bbox
 
+    # x range is [0, width], y range is [0, height]
     x0 = max(0, int(x0))
     y0 = max(0, int(y0))
-    x1 = min(height, int(x1))
-    y1 = min(width, int(y1))
+    x1 = min(width, int(x1))
+    y1 = min(height, int(y1))
 
     return np.array([x0, y0, x1, y1], dtype=np.int32)

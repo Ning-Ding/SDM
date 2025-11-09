@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- 🐛 **CRITICAL: Coordinate axis confusion in bounding box operations**: Fixed systematic coordinate swap in `expand_bbox()`, `bbox_to_square()`, `clip_bbox()` and `crop_and_resize()`. These functions incorrectly treated bbox `[x0, y0, x1, y1]` coordinates, swapping x/y axes and height/width limits. This caused faces to be cropped from wrong regions and landmarks to be misaligned, making all training and inference learn on corrupted data. Now correctly uses x as horizontal (width) and y as vertical (height).
+
+- 🐛 **CRITICAL: Coordinate axis confusion in HOG feature extraction**: Fixed incorrect numpy array indexing in `HOGExtractor._compute_orientation_histogram()`. The code used `filtered[x_start:x_end, y_start:y_end]` but numpy arrays are indexed `[row, col] = [y, x]`, causing features to be extracted from wrong pixel neighborhoods. Now correctly uses `filtered[y_start:y_end, x_start:x_end]` to match landmark (x, y) coordinates to image (row=y, col=x) indexing.
+
 - 🐛 **WingLoss CUDA device mismatch**: Fixed critical bug where `WingLoss.C` was created on CPU but not transferred to CUDA with the model, causing immediate training failure when using CUDA. Now properly registered as a buffer using `register_buffer()`.
 
 - 🐛 **SDM evaluate IndexError with config mismatch**: Fixed crash in `SDM.evaluate()` when a model trained with `n_iterations=N` is loaded with a config having different `n_iterations=M`. The `mse_per_iteration` buffer is now sized from `len(self.regressors)` (actual model) instead of `self.config.n_iterations` (current config), preventing IndexError when iterating over regressors.

@@ -158,17 +158,19 @@ class HOGExtractor:
                 filtered = uniform_filter(bin_magnitude, size=pixels_per_cell)
 
                 # Extract cells around landmark
-                # Note: Need to handle boundaries carefully
+                # Note: landmarks are (x, y) where x is horizontal, y is vertical
+                # filtered is (row, col) = (y, x), so we need to swap indexing
                 x_start = max(0, x - radius + pixels_per_cell // 2)
-                x_end = min(filtered.shape[0], x + radius + pixels_per_cell // 2)
+                x_end = min(filtered.shape[1], x + radius + pixels_per_cell // 2)
                 y_start = max(0, y - radius + pixels_per_cell // 2)
-                y_end = min(filtered.shape[1], y + radius + pixels_per_cell // 2)
+                y_end = min(filtered.shape[0], y + radius + pixels_per_cell // 2)
 
                 # Sample at pixel_per_cell intervals
+                # filtered[row, col] = filtered[y, x]
                 try:
                     sampled = filtered[
-                        x_start:x_end:pixels_per_cell,
                         y_start:y_end:pixels_per_cell,
+                        x_start:x_end:pixels_per_cell,
                     ].T
 
                     # Place in histogram (handle size mismatches)

@@ -87,9 +87,10 @@ def crop_and_resize(
         pil_image = Image.fromarray(image)
 
     # Crop image
-    # PIL uses (left, upper, right, lower) = (y0, x0, y1, x1)
+    # PIL uses (left, upper, right, lower) = (x0, y0, x1, y1)
+    # bbox is [x0, y0, x1, y1] where x is horizontal, y is vertical
     x0, y0, x1, y1 = expanded_bbox
-    cropped = pil_image.crop((y0, x0, y1, x1))
+    cropped = pil_image.crop((x0, y0, x1, y1))
 
     # Add padding
     expand = config.expand_pixels
@@ -103,8 +104,8 @@ def crop_and_resize(
     gray_array = np.array(gray)
 
     # Transform landmarks
-    # 1. Adjust for crop
-    new_landmarks = landmarks.copy() - np.array([y0, x0])
+    # 1. Adjust for crop (landmarks are in (x, y) format)
+    new_landmarks = landmarks.copy() - np.array([x0, y0])
     # 2. Adjust for padding
     new_landmarks = new_landmarks + expand
     # 3. Adjust for resize
